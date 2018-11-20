@@ -6,7 +6,7 @@ public class ItemPlacer : MonoBehaviour
 {
     private BasicGrid grid;
 
-    public GameObject flashlight;
+    public GameObject item;
 
     private void Awake()
     {
@@ -22,17 +22,24 @@ public class ItemPlacer : MonoBehaviour
 
             if (Physics.Raycast(ray, out hitInfo))
             {
-                PlaceCubeNear(hitInfo.point);
+                if (hitInfo.collider.tag == "ClickableItem")
+                {
+                    item = hitInfo.collider.gameObject;
+                }
+                else if (item != null)
+                {
+                    PlaceItemNear(hitInfo.point);
+                }
             }
         }
     }
 
-    private void PlaceCubeNear(Vector3 clickPoint)
+    private void PlaceItemNear(Vector3 clickPoint)
     {
         var finalPosition = grid.GetNearestPointOnGrid(clickPoint);
-        GameObject item = Instantiate(flashlight);
         item.transform.position = finalPosition;
-        //GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = finalPosition;
+        item = null;
+
 
     }
 }
