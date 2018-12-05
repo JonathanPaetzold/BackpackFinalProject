@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,8 @@ public class ItemPlacer : MonoBehaviour
 {
     private BasicGrid grid;
 
-    public GameObject item;
+    public Items item;
+    //private Vector3 initPos;
 
     private void Awake()
     {
@@ -24,11 +26,16 @@ public class ItemPlacer : MonoBehaviour
             {
                 if (hitInfo.collider.tag == "ClickableItem")
                 {
-                    item = hitInfo.collider.gameObject;
+                    GameObject temp;
+                    temp = hitInfo.collider.gameObject;
+                    item = temp.GetComponent<Items>();
+                    grid.RemoveInstances(item);
+
                 }
                 else if (item != null)
                 {
                     PlaceItemNear(hitInfo.point);
+       
                 }
             }
         }
@@ -36,8 +43,8 @@ public class ItemPlacer : MonoBehaviour
 
     private void PlaceItemNear(Vector3 clickPoint)
     {
-        var finalPosition = grid.GetNearestPointOnGrid(clickPoint);
-        item.transform.position = finalPosition;
+        var finalPosition = grid.GetNearestPointOnGrid(clickPoint, item);
+        //item.transform.position = item.initPos;
         item = null;
 
 
