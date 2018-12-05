@@ -8,7 +8,7 @@ public class ItemPlacer : MonoBehaviour
     private BasicGrid grid;
 
     public Items item;
-    public Boolean clickable;
+    //private Vector3 initPos;
 
     private void Awake()
     {
@@ -28,12 +28,9 @@ public class ItemPlacer : MonoBehaviour
                 {
                     GameObject temp;
                     temp = hitInfo.collider.gameObject;
-                    if (temp.GetComponent<Items>().clickable)
-                    {
-                        item = temp.GetComponent<Items>();
-                    }
+                    item = temp.GetComponent<Items>();
+                    grid.RemoveInstances(item);
 
-                    
                 }
                 else if (item != null)
                 {
@@ -47,7 +44,7 @@ public class ItemPlacer : MonoBehaviour
     private void PlaceItemNear(Vector3 clickPoint)
     {
         var finalPosition = grid.GetNearestPointOnGrid(clickPoint, item);
-        item.transform.position = finalPosition;
+        //item.transform.position = item.initPos;
         item = null;
 
 

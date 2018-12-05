@@ -14,10 +14,16 @@ public class Items : MonoBehaviour {
     public Boolean clickable;
     public int rows;
     public int cols;
+    public Vector3 initPos;
+    public Sprite extra;
+    public Boolean canPuncture;
+    public Boolean punctureable;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         clickable = true;
+        initPos = this.transform.position;
+        interacted = false;
 	}
 	
 	// Update is called once per frame
@@ -25,9 +31,9 @@ public class Items : MonoBehaviour {
 
     }
 
-    public void SetPosition(float x, float y, float z)
+    public void SetPosition(Vector3 finalPosition)
     {
-        this.transform.position = new Vector3(x,y,z);
+        this.transform.position = finalPosition;
         //this.transform.rotation = Quaternion.Euler(0, 0, 0);
 
     }

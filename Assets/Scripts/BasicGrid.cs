@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
+using Random = UnityEngine.Random;
 
 public class BasicGrid : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class BasicGrid : MonoBehaviour
 
     public Items defualt;
     public Items[,] gridArray;
+    private Boolean canPlace;
 
     private void Start()
     {
@@ -92,13 +94,13 @@ public class BasicGrid : MonoBehaviour
         //position -= transform.parent.parent.position;
 
         int xCount = Mathf.RoundToInt(position.x * 10);
-        int yCount = Mathf.RoundToInt(position.y * 10);
+        int yCount = Mathf.RoundToInt(position.y * 8);
         int zCount = Mathf.RoundToInt(position.z * 10);
 
         Vector3 result = new Vector3(
             (float)(xCount / 10),
-            (float)yCount / 10,
-            (float)(zCount / 10) - 1);
+            (float)yCount / 8,
+            (float)(zCount / 10));
 
         //result += transform.parent.parent.position;
         PlaceInGrid(result, item);
@@ -107,23 +109,43 @@ public class BasicGrid : MonoBehaviour
 
     private void PlaceInGrid(Vector3 position, Items item)
     {
+        canPlace = true;
 
-        if (gridArray[(int)position.x, (int)-position.y] = null)
+        for (int row = 0; row < item.rows; row++)
         {
-            gridArray[(int)position.x, (int)-position.y] = item;
-
-
-            for (int index = 1; index < item.rows; index++)
+            for (int col = 0; col < item.cols; col++)
             {
-                gridArray[(int)position.x - index, (int)-position.y] = item;
-            }
+                int tempX = (int)(position.x - row);
+                int tempY = (int)(-position.y + col);
+                //Debug.Log(tempX.ToString() + " " + tempY.ToString());
 
-            for (int index = 1; index <= item.cols; index++)
-            {
-                gridArray[(int)position.x, (int)(-position.y) + index] = item;
+                if (gridArray[(int)position.x - row, (int)(-position.y) + col] != null)
+                {
+                    Debug.Log("overlap");
+                    canPlace = false;
+                }
             }
-            item.SetPosition((int)position.x, (int)-position.y, (int)-position.z);
         }
+
+
+
+        if (canPlace)
+        {
+            for (int row = 0; row < item.rows; row++)
+            {
+                for (int col = 0; col < item.cols; col++)
+                {
+                    gridArray[(int)position.x - row, (int)(-position.y) + col] = item;
+                }
+            }
+
+            item.SetPosition(position);
+        }
+        else
+        {
+            item.transform.position = item.initPos;
+        }
+
 
     }
 
@@ -136,13 +158,26 @@ public class BasicGrid : MonoBehaviour
                 Items temp = gridArray[row, col];
                 if (temp != null)
                 {
+                    SpriteRenderer render = temp.GetComponent<SpriteRenderer>();
                     float combinedWeight = 0;
                     combinedWeight = CheckWeights(temp, row, col);
+                    Boolean punctured = false;
+                    if (temp.punctureable)
+                    {
+                        punctured = CheckPuncture(temp, row, col, temp.cols, temp.rows);
+                    }
+                    if (punctured)
+                    {
+                        render.sprite = temp.extra;
+                    }
                     //Debug.Log(row.ToString() + col.ToString() + "toughness" + temp.toughness.ToString());
                     if (combinedWeight > temp.toughness)
                     {
-                        //Debug.Log(combinedWeight.ToString() + "Toughness: " + temp.toughness.ToString() +"Position: " + row.ToString() + col.ToString());
+                        Debug.Log(combinedWeight.ToString() + "Toughness: " + temp.toughness.ToString() +"Position: " + row.ToString() + col.ToString());
                         temp.damaged = true;
+                        temp.interacted = true;
+                        render.sprite = temp.extra;
+
                     }
 
                 }   
@@ -163,6 +198,7 @@ public class BasicGrid : MonoBehaviour
                 }
 
 
+
             }
         }
     }
@@ -179,8 +215,62 @@ public class BasicGrid : MonoBehaviour
                 totalWeight += temp.weight;
             }
         }
-        Debug.Log(totalWeight.ToString() + "Position: " + x.ToString() + y.ToString());
+        //Debug.Log(totalWeight.ToString() + "Position: " + x.ToString() + y.ToString());
         return totalWeight;
+
+    }
+
+    public Boolean CheckPuncture(Items item, int x, int y, int cols, int rows)
+    {
+        Boolean tempbol = false;
+
+        for (int col = y - 1; col >= y - cols; col--)
+        {
+            Items temp = gridArray[x, col];
+            if (temp != null && temp.canPuncture && item.punctureable)
+            {
+                float randValue = Random.value;
+                if (randValue < .30f)
+                {
+                    tempbol = true;
+                }
+
+            }
+        }
+
+        for (int row = x - 1; row >= x - rows; row--)
+        {
+            if (x != 0)
+            {
+                Items temp = gridArray[row, y];
+                if (temp != null && temp.canPuncture && item.punctureable)
+                {
+                    float randValue = Random.value;
+                    if (randValue < .30f)
+                    {
+                        tempbol = true;
+                    }
+
+                }
+            }
+        }
+
+        return tempbol;
+    }
+
+    public void RemoveInstances(Items item) 
+    {
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < cols; col++)
+            {
+                if (gridArray[row, col] == item)
+                {
+                    gridArray[row, col] = null;
+                }
+
+            }
+        }
 
     }
 
